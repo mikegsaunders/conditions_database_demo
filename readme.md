@@ -12,4 +12,4 @@ Create a virtual environment
 
 `pip install archivessnake`
 
-The Streamlit app can then be tested locally by running `streamlit run Add_new_condition` in the venv terminal.
+The Streamlit app can then be tested locally by running `streamlit run Add_new_condition.py` in the venv terminal.
