@@ -1,0 +1,5 @@
+[client]
+showSidebarNavigation = false
+showErrorDetails = false
+[browser]
+gatherUsageStats = false
