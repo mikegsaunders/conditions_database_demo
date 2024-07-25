@@ -5,8 +5,13 @@ A demo of a conservations conditions database to use across ArchivesSpace and Al
 ## Usage & Requirements
 
 Create a virtual environment
+
 `pip install requests`
+
 `pip install streamlit`
+
 `pip install archivessnake`
+
 The Streamlit app can then be tested locally by running
+
 `streamlit run Add_new_condition` in the venv terminal.
