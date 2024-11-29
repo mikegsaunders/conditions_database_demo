@@ -17,9 +17,12 @@ assessments = "/repositories/2/assessments"
 
 st.set_page_config(initial_sidebar_state="collapsed", layout="wide")
 
-st.sidebar.page_link("Add_new_condition.py", label="Conservation input")
+st.sidebar.page_link("home.py", label="Home")
+st.sidebar.page_link("pages/Add_new_condition.py", label="Conservation input")
 st.sidebar.page_link("pages/Condition_database.py", label="Condition database")
-# st.sidebar.page_link("pages/sli.py", label="Shelfmark Location Index")
+# st.sidebar.page_link("pages/demopage.py", label="Demo Page")
+st.sidebar.page_link("pages/batch_input.py", label="Batch input")
+st.sidebar.page_link("pages/batch_upload_spreadsheet.py", label="Upload spreadsheet")
 
 st.markdown(
     """<style>
@@ -47,11 +50,10 @@ def clear_text():
 
 
 # st.page_link("Add_new_condition.py", label="Back (to add new condition)")
-if st.button("Back (to add new condition)", on_click=clear_text):
-    st.switch_page("Add_new_condition.py")
-st.write("# Condition database")
+st.page_link("home.py", label="Home")
+st.title("Conservation database")
 with st.spinner(text="Fetching conservation data from Alma and ArchivesSpace..."):
-    set_id = "16514533260004341"
+    set_id = "17065550790004341"
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/conf/sets/{set_id}/members?apikey={apiKey}"
     r = requests.get(url, headers=headers).json()

@@ -19,8 +19,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-st.sidebar.page_link("Add_new_condition.py", label="Conservation input")
+st.sidebar.page_link("home.py", label="Home")
+st.sidebar.page_link("pages/Add_new_condition.py", label="Conservation input")
 st.sidebar.page_link("pages/Condition_database.py", label="Condition database")
+# st.sidebar.page_link("pages/demopage.py", label="Demo Page")
+st.sidebar.page_link("pages/batch_input.py", label="Batch input")
+st.sidebar.page_link("pages/batch_upload_spreadsheet.py", label="Upload spreadsheet")
 
 st.markdown(
     """<style>
@@ -62,12 +66,8 @@ components.html(
     """,
     height=0,
 )
-st.page_link("pages/Condition_database.py", label="Condition database")
-st.write(
-    """
-# Conservation input
-        """
-)
+st.page_link("home.py", label="Home")
+st.title("Conservation input")
 destination = ""
 conservation_status = ""
 public_note = ""
@@ -107,25 +107,25 @@ def status_form():
     arsenic = ""
     conservation_status = st.selectbox(
         "Conservation status: ",
-        ("Broken", "Arsenic", "Frayed"),
+        ("C1: Good", "C2: Fair", "C3: Poor", "C4: Unacceptable"),
         index=None,
         placeholder="Select a Conservation Status",
         disabled=st.session_state.disabled,
     )
-    if conservation_status == "Arsenic":
+    if conservation_status == "C1: Good":
         public_note = st.text_input(
             "Public note: ",
-            "Wear gloves!",
+            "Handle with care",
             key="public_note",
             disabled=st.session_state.disabled,
         )
         staff_note = st.text_input(
             "Staff note: ",
-            "Tell people to wear gloves!",
+            "",
             key="private_note",
             disabled=st.session_state.disabled,
         )
-    elif conservation_status == "Frayed":
+    elif conservation_status == "C2: Fair":
         public_note = st.text_input(
             "Public note: ",
             "Please be careful when handling this book, it may be damaged",
@@ -134,20 +134,33 @@ def status_form():
         )
         staff_note = st.text_input(
             "Staff note: ",
-            "Frayed, but loanable",
+            "",
             key="private_note",
             disabled=st.session_state.disabled,
         )
-    elif conservation_status == "Broken":
+    elif conservation_status == "C3: Poor":
         public_note = st.text_input(
             "Public note: ",
-            "This book is currently unavailable as it is being repaired",
+            "This book is very fragile and may require special handling",
             key="public_note",
             disabled=st.session_state.disabled,
         )
         staff_note = st.text_input(
             "Staff note: ",
-            "Damaged, not loanable",
+            "",
+            key="private_note",
+            disabled=st.session_state.disabled,
+        )
+    elif conservation_status == "C4: Unacceptable":
+        public_note = st.text_input(
+            "Public note: ",
+            "This book is too damaged to be handled",
+            key="public_note",
+            disabled=st.session_state.disabled,
+        )
+        staff_note = st.text_input(
+            "Staff note: ",
+            "",
             key="private_note",
             disabled=st.session_state.disabled,
         )
@@ -167,7 +180,7 @@ def search_primo():
 
 
 identifier = st.text_input(
-    "Enter the barcode (Library Search) or Identifier (ArchivesSpace): ",
+    "Enter the barcode (Alma) or Identifier (ArchivesSpace): ",
     key="search_term",
     disabled=st.session_state.disabled,
 )
@@ -187,7 +200,7 @@ if identifier != "":
         except (IndexError, KeyError):
             st.write("Barcode not found")
     else:
-        st.write("Please enter a Library Search barcode or ArchivesSpace identifier")
+        st.write("Please enter a Alma barcode or ArchivesSpace identifier")
 
 
 def lock():
