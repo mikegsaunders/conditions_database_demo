@@ -14,6 +14,7 @@ search_identifier = "repositories/2/find_by_id/resources"
 search_component_identifier = "repositories/2/find_by_id/archival_objects"
 apiKey = os.environ["ALMA_API_SANDBOX"]
 assessments = "/repositories/2/assessments"
+headers = {"accept": "application/json", "Content-Type": "application/json"}
 
 st.set_page_config(
     initial_sidebar_state="collapsed",
@@ -171,12 +172,29 @@ def status_form():
 
 
 def search_primo():
-    headers = {"accept": "application/json", "Content-Type": "application/json"}
     url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode={identifier}&apikey={apiKey}"
     r = requests.get(url, headers=headers).json()
     title = r["bib_data"]["title"].replace(" /", "")
     author = r["bib_data"]["author"]
     st.write(f"{title} by {author}")
+
+
+def primo_submit(identifier, conservation_status, public_note, staff_note):
+    url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode={identifier}&apikey={apiKey}"
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        data = r.json()
+        data["item_data"]["physical_condition"]["value"] = conservation_status[:2]
+        data["item_data"]["physical_condition"]["description"] = conservation_status
+        if public_note != "":
+            data["item_data"]["public_note"] = public_note
+        if staff_note != "":
+            data["item_data"]["fulfillment_note"] = staff_note
+        mmsID = data["bib_data"]["mms_id"]
+        holdingID = data["holding_data"]["holding_id"]
+        itemID = data["item_data"]["pid"]
+        url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
+        r = requests.put(url, json=data, headers=headers)
 
 
 identifier = st.text_input(
@@ -225,12 +243,13 @@ if st.session_state.submitted:
     if destination == "Primo":
         primo_submit(identifier, conservation_status, public_note, staff_note)
     if destination == "ArchivesSpace":
-        st.markdown(
+        pass  # TODO add archivesspace stuff
+    st.markdown(
         f"""### The following info was sent to {destination} for {identifier}:
-            
+        
 __Conservation status:__ {conservation_status}
 
 __Public Note:__ {public_note}
 
-__Staff Note:__ {staff_note}"""
+__Staff Note (Fulfillment note):__ {staff_note}"""
     )

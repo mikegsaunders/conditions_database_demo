@@ -15,6 +15,7 @@ search_identifier = "repositories/2/find_by_id/resources"
 search_component_identifier = "repositories/2/find_by_id/archival_objects"
 apiKey = os.environ["ALMA_API_SANDBOX"]
 assessments = "/repositories/2/assessments"
+headers = {"accept": "application/json", "Content-Type": "application/json"}
 
 st.set_page_config(initial_sidebar_state="collapsed", layout="wide")
 
@@ -66,6 +67,29 @@ st.data_editor(
     use_container_width=True,
     hide_index=True,
 )
+
+
+def primo_submit(collected_alma):
+    for row in collected_alma:
+        identifier = row["identifier"]
+        conservation_status = row["condition"]
+        staff_note = row["staff_note"]
+        public_note = row["public_note"]
+        url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode={identifier}&apikey={apiKey}"
+        r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            data["item_data"]["physical_condition"]["value"] = conservation_status[:2]
+            data["item_data"]["physical_condition"]["description"] = conservation_status
+            if public_note != "":
+                data["item_data"]["public_note"] = public_note
+            if staff_note != "":
+                data["item_data"]["fulfillment_note"] = staff_note
+            mmsID = data["bib_data"]["mms_id"]
+            holdingID = data["holding_data"]["holding_id"]
+            itemID = data["item_data"]["pid"]
+            url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
+            r = requests.put(url, json=data, headers=headers)
 
 
 def search_aspace(identifier):
@@ -144,6 +168,8 @@ def submit(edited_dataframe):
     else:
         st.write("No aspace data")
     if len(collected_alma) > 0:
+        with st.spinner("Uploading to Alma..."):
+            primo_submit(collected_alma)
         st.write("Data added to Alma:")
         st.write(collected_alma)
     else:
