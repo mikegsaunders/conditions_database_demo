@@ -5,6 +5,7 @@ from asnake.client.web_client import ASnakeAuthError
 import os
 import requests
 import pandas as pd
+from contextlib import contextmanager
 
 # parameters
 username = "admin"
@@ -29,6 +30,14 @@ st.sidebar.page_link("pages/batch_upload_spreadsheet.py", label="Upload spreadsh
 
 st.markdown(
     """<style>
+            .stDownloadButton > button {
+                background-color: mediumvioletred;
+                border: none;
+            }
+            .stDownloadButton > button:hover {
+                background-color: gray;
+                color: white;
+            }
             a[data-testid="stPageLink-NavLink"] {
                 background-color: mediumvioletred;
             }
@@ -50,14 +59,57 @@ st.markdown(
             </style>""",
     unsafe_allow_html=True,
 )
+
+HORIZONTAL_STYLE = """
+<style class="hide-element">
+    /* Hides the style container and removes the extra spacing */
+    .element-container:has(.hide-element) {
+        display: none;
+    }
+    /*
+        The selector for >.element-container is necessary to avoid selecting the whole
+        body of the streamlit app, which is also a stVerticalBlock.
+    */
+    div[data-testid="stVerticalBlock"]:has(> .element-container .horizontal-marker) {
+        display: flex;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: baseline;
+    }
+    /* Buttons and their parent container all have a width of 704px, which we need to override */
+    div[data-testid="stVerticalBlock"]:has(> .element-container .horizontal-marker) div {
+        width: max-content !important;
+    }
+    /* Just an example of how you would style buttons, if desired */
+    /*
+    div[data-testid="stVerticalBlock"]:has(> .element-container .horizontal-marker) button {
+        border-color: red;
+    }
+    */
+</style>
+"""
+
+@contextmanager
+def st_horizontal():
+    st.markdown(HORIZONTAL_STYLE, unsafe_allow_html=True)
+    with st.container():
+        st.markdown(
+            '<span class="hide-element horizontal-marker"></span>',
+            unsafe_allow_html=True,
+        )
+        yield
+
 st.page_link("home.py", label="Home")
 st.title("Upload spreadsheet")
-with open("Conservation_template.xlsx", "rb") as f:
-    st.download_button(
-        label="Download template",
-        data=f,
-        file_name="Conservation_template.xlsx",
-    )
+with st_horizontal():
+    with open("Conservation_template.xlsx", "rb") as f:
+        st.download_button(
+            label="Download template",
+            data=f,
+            file_name="Conservation_template.xlsx",
+        )
+    st.write("Use this template for your conservation data")
 batch_file = st.file_uploader("Upload a spreadsheet", type=["csv", "xls", "xlsx"])
 if batch_file is not None:
     df = pd.read_excel(batch_file)

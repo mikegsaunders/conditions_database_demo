@@ -222,7 +222,10 @@ if (conservation_status is not None) and (conservation_status != ""):
         st.button("Change another record", type="primary", on_click=clear_text)
 
 if st.session_state.submitted:
-    st.markdown(
+    if destination == "Primo":
+        primo_submit(identifier, conservation_status, public_note, staff_note)
+    if destination == "ArchivesSpace":
+        st.markdown(
         f"""### The following info was sent to {destination} for {identifier}:
             
 __Conservation status:__ {conservation_status}

@@ -88,5 +88,5 @@ with st_horizontal():
     st.page_link("pages/batch_upload_spreadsheet.py", label="Upload a spreadsheet")
     st.write("if you've already got a spreadsheet of conservation notes to add")
 with st_horizontal():
-    st.page_link("pages/Condition_database.py", label="View the Conservation Database")
+    st.page_link("pages/Condition_database.py", label="View the Condition Database")
     st.write("to see all the conservation notes in Alma and ArchivesSpace")
