@@ -16,6 +16,7 @@ search_identifier = "repositories/2/find_by_id/resources"
 search_component_identifier = "repositories/2/find_by_id/archival_objects"
 apiKey = os.environ["ALMA_API_SANDBOX"]
 assessments = "/repositories/2/assessments"
+headers = {"accept": "application/json", "Content-Type": "application/json"}
 
 st.set_page_config(
     initial_sidebar_state="collapsed",
@@ -90,6 +91,7 @@ HORIZONTAL_STYLE = """
 </style>
 """
 
+
 @contextmanager
 def st_horizontal():
     st.markdown(HORIZONTAL_STYLE, unsafe_allow_html=True)
@@ -99,6 +101,30 @@ def st_horizontal():
             unsafe_allow_html=True,
         )
         yield
+
+
+def primo_submit(almadata):
+    for row in almadata:
+        identifier = row["identifier"]
+        conservation_status = row["condition"]
+        staff_note = row["staff_note"]
+        public_note = row["public_note"]
+        url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode={identifier}&apikey={apiKey}"
+        r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            data["item_data"]["physical_condition"]["value"] = conservation_status[:2]
+            data["item_data"]["physical_condition"]["description"] = conservation_status
+            if public_note != "":
+                data["item_data"]["public_note"] = public_note
+            if staff_note != "":
+                data["item_data"]["fulfillment_note"] = staff_note
+            mmsID = data["bib_data"]["mms_id"]
+            holdingID = data["holding_data"]["holding_id"]
+            itemID = data["item_data"]["pid"]
+            url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
+            r = requests.put(url, json=data, headers=headers)
+
 
 st.page_link("home.py", label="Home")
 st.title("Upload spreadsheet")
@@ -129,6 +155,8 @@ if batch_file is not None:
             elif row.get("Identifier").lower().startswith(("b", "v")):
                 almadata.append(data)
     if len(almadata) > 0:
+        with st.spinner("Uploading to Alma..."):
+            primo_submit(almadata)
         st.write("Data sent to Alma:")
         st.write(almadata)
     if len(aspacedata) > 0:
