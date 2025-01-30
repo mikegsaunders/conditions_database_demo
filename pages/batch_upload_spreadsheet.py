@@ -121,22 +121,27 @@ def primo_submit(almadata):
             mmsID = data["bib_data"]["mms_id"]
             holdingID = data["holding_data"]["holding_id"]
             itemID = data["item_data"]["pid"]
+            library = data["item_data"]["library"]["value"]
             url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
             r = requests.put(url, json=data, headers=headers)
             if r.status_code == 200:
                 if conservation_status == "C4":
                     data = r.json()
-                    mmsID = data["bib_data"]["mms_id"]
-                    holdingID = data["holding_data"]["holding_id"]
-                    itemID = data["item_data"]["pid"]
+                    data["holding_data"]["temp_library"]["value"] = library
+                    data["holding_data"]["in_temp_location"] = "true"
+                    data["holding_data"]["temp_location"]["value"] = "C4"
 
                     # send work order location
                     url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}"
+                    if library == "GRR":
+                        circ_desk = "WO_GRR"
+                    elif library == "SCRR":
+                        circ_desk = "WO_SCRR"
                     params = {
                         "apikey": apiKey,
                         "op": "scan",
-                        "library": "GRR",
-                        "circ_desk": "WO_GRR",
+                        "library": library,
+                        "circ_desk": circ_desk,
                         "work_order_type": "CONSERVE",
                     }
                     r = requests.post(url, params=params, headers=headers)
