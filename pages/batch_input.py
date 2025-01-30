@@ -111,6 +111,10 @@ def primo_submit(collected_alma):
                         "work_order_type": "CONSERVE",
                     }
                     r = requests.post(url, params=params, headers=headers)
+                    if r.status_code != 200:
+                        st.write(
+                            f"Work order not sent (probably location/library problem: {library})"
+                        )
 
 
 def search_aspace(identifier):

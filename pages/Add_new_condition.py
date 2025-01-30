@@ -217,6 +217,10 @@ def primo_submit(identifier, conservation_status, public_note, staff_note):
                     "work_order_type": "CONSERVE",
                 }
                 r = requests.post(url, params=params, headers=headers)
+                if r.status_code != 200:
+                    st.write(
+                        f"Work order not sent (probably location/library problem: {library})"
+                    )
 
 
 identifier = st.text_input(
