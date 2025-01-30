@@ -184,8 +184,8 @@ def primo_submit(identifier, conservation_status, public_note, staff_note):
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         data = r.json()
-        data["item_data"]["physical_condition"]["value"] = conservation_status[:2]
-        data["item_data"]["physical_condition"]["description"] = conservation_status
+        conservation_status = conservation_status[:2]
+        data["item_data"]["physical_condition"]["value"] = conservation_status
         if public_note != "":
             data["item_data"]["public_note"] = public_note
         if staff_note != "":
@@ -195,6 +195,23 @@ def primo_submit(identifier, conservation_status, public_note, staff_note):
         itemID = data["item_data"]["pid"]
         url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
         r = requests.put(url, json=data, headers=headers)
+        if r.status_code == 200:
+            if conservation_status == "C4":
+                data = r.json()
+                mmsID = data["bib_data"]["mms_id"]
+                holdingID = data["holding_data"]["holding_id"]
+                itemID = data["item_data"]["pid"]
+
+                # send work order location
+                url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}"
+                params = {
+                    "apikey": apiKey,
+                    "op": "scan",
+                    "library": "GRR",
+                    "circ_desk": "WO_GRR",
+                    "work_order_type": "CONSERVE",
+                }
+                r = requests.post(url, params=params, headers=headers)
 
 
 identifier = st.text_input(

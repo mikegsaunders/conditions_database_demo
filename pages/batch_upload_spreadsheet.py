@@ -106,15 +106,14 @@ def st_horizontal():
 def primo_submit(almadata):
     for row in almadata:
         identifier = row["identifier"]
-        conservation_status = row["condition"]
+        conservation_status = row["condition"][:2]
         staff_note = row["staff_note"]
         public_note = row["public_note"]
         url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/items?item_barcode={identifier}&apikey={apiKey}"
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             data = r.json()
-            data["item_data"]["physical_condition"]["value"] = conservation_status[:2]
-            data["item_data"]["physical_condition"]["description"] = conservation_status
+            data["item_data"]["physical_condition"]["value"] = conservation_status
             if public_note != "":
                 data["item_data"]["public_note"] = public_note
             if staff_note != "":
@@ -124,6 +123,23 @@ def primo_submit(almadata):
             itemID = data["item_data"]["pid"]
             url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
             r = requests.put(url, json=data, headers=headers)
+            if r.status_code == 200:
+                if conservation_status == "C4":
+                    data = r.json()
+                    mmsID = data["bib_data"]["mms_id"]
+                    holdingID = data["holding_data"]["holding_id"]
+                    itemID = data["item_data"]["pid"]
+
+                    # send work order location
+                    url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}"
+                    params = {
+                        "apikey": apiKey,
+                        "op": "scan",
+                        "library": "GRR",
+                        "circ_desk": "WO_GRR",
+                        "work_order_type": "CONSERVE",
+                    }
+                    r = requests.post(url, params=params, headers=headers)
 
 
 st.page_link("home.py", label="Home")
