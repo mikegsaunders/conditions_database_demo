@@ -122,15 +122,14 @@ def primo_submit(almadata):
             holdingID = data["holding_data"]["holding_id"]
             itemID = data["item_data"]["pid"]
             library = data["item_data"]["library"]["value"]
+            if conservation_status == "C4":
+                data["holding_data"]["temp_library"]["value"] = library
+                data["holding_data"]["in_temp_location"] = "true"
+                data["holding_data"]["temp_location"]["value"] = "C4"
             url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}?apikey={apiKey}"
             r = requests.put(url, json=data, headers=headers)
             if r.status_code == 200:
                 if conservation_status == "C4":
-                    data = r.json()
-                    data["holding_data"]["temp_library"]["value"] = library
-                    data["holding_data"]["in_temp_location"] = "true"
-                    data["holding_data"]["temp_location"]["value"] = "C4"
-
                     # send work order location
                     url = f"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/{mmsID}/holdings/{holdingID}/items/{itemID}"
                     if library == "GRR":
